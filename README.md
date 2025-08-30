@@ -59,6 +59,7 @@ alx-polly/
 
 - Node.js 18+ 
 - npm or yarn
+- Supabase account (free tier available)
 
 ### Installation
 
@@ -73,12 +74,21 @@ cd alx-polly
 npm install
 ```
 
-3. Run the development server:
+3. Set up Supabase:
+   - Go to [supabase.com](https://supabase.com) and create a new project
+   - Get your project URL and anon key from the API settings
+   - Copy `env.example` to `.env.local` and fill in your Supabase credentials:
+   ```bash
+   cp env.example .env.local
+   ```
+   - Update `.env.local` with your actual Supabase values
+
+4. Run the development server:
 ```bash
 npm run dev
 ```
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+5. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Available Scripts
 
@@ -94,17 +104,69 @@ npm run dev
 - **Styling**: Tailwind CSS
 - **UI Components**: Shadcn/ui
 - **Icons**: Lucide React
-- **State Management**: React hooks (local state)
+- **State Management**: React hooks + Context API
+- **Authentication**: Supabase Auth
+- **Database**: Supabase PostgreSQL
+
+## Supabase Setup
+
+### 1. Create a Supabase Project
+1. Go to [supabase.com](https://supabase.com) and sign up/login
+2. Click "New Project" and follow the setup wizard
+3. Choose a free tier plan
+4. Wait for your database to be ready
+
+### 2. Get Your Credentials
+1. In your project dashboard, go to Settings → API
+2. Copy your Project URL and anon/public key
+3. Add them to your `.env.local` file
+
+### 3. Database Schema
+The app expects the following tables (you can create them manually or use SQL):
+
+```sql
+-- Users table (handled by Supabase Auth)
+-- Polls table
+CREATE TABLE polls (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  title TEXT NOT NULL,
+  description TEXT,
+  author_id UUID REFERENCES auth.users(id),
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Poll options table
+CREATE TABLE poll_options (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  poll_id UUID REFERENCES polls(id) ON DELETE CASCADE,
+  text TEXT NOT NULL,
+  vote_count INTEGER DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Votes table
+CREATE TABLE votes (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  poll_id UUID REFERENCES polls(id) ON DELETE CASCADE,
+  option_id UUID REFERENCES poll_options(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES auth.users(id),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(poll_id, user_id)
+);
+```
 
 ## Development Status
 
-This is a scaffolded project with placeholder implementations. The following areas need to be implemented:
+This project now has a working authentication system with Supabase. The following areas are implemented:
 
-### Authentication
-- [ ] Database integration
-- [ ] JWT token management
-- [ ] Password hashing
-- [ ] Session management
+### Authentication ✅
+- [x] Supabase integration
+- [x] JWT token management
+- [x] User registration and login
+- [x] Session management
+- [x] Protected routes
 
 ### Poll Management
 - [ ] Database models

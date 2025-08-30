@@ -1,3 +1,5 @@
+"use client";
+
 import { PollCard } from "@/components/polls/PollCard";
 
 // Sample data - replace with actual API calls
